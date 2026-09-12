@@ -366,7 +366,7 @@ export default function App() {
           </header>
 
           <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
-            <div style={{ maxWidth: '840px', width: '100%' }}>
+            <div style={{ maxWidth: '960px', width: '100%' }}>
               <SignIn6
                 companyName={companyName}
                 onSuccess={handleLoginSuccess}

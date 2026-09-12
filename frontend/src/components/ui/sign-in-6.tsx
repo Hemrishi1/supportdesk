@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Sparkles, ArrowRight, ShieldCheck } from 'lucide-react'
 
 function GoogleIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="w-4 h-4" aria-hidden="true">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, flexShrink: 0 }}
+      aria-hidden="true"
+    >
       <path
         fill="#4285F4"
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z"
@@ -61,181 +62,195 @@ export function SignIn6({ onSuccess, companyName = 'SupportDesk' }: SignIn6Props
     setTimeout(() => {
       setLoading(false)
       setSignedIn(true)
-      if (onSuccess) onSuccess(email || 'demo@supportdesk.ai')
+      if (onSuccess) onSuccess(email || 'demo.agent@supportdesk.ai')
     }, 600)
   }
 
   if (signedIn) {
     return (
-      <Card className="w-full max-w-md p-8 text-center bg-[#131b2e] border-[rgba(255,255,255,0.1)] text-[#f8fafc] shadow-2xl rounded-2xl mx-auto">
-        <div className="w-14 h-14 bg-emerald-500/15 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/30 shadow-lg">
-          <ShieldCheck className="w-7 h-7" />
+      <div className="signin-success-card">
+        <div className="signin-success-icon">
+          <ShieldCheck style={{ width: 30, height: 30 }} />
         </div>
-        <h3 className="text-xl font-bold mb-2">Welcome to {companyName}</h3>
-        <p className="text-sm text-[#94a3b8] mb-6">
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>
+          Welcome to {companyName}
+        </h3>
+        <p style={{ fontSize: '0.88rem', color: '#94a3b8', marginBottom: '24px', lineHeight: 1.5 }}>
           Authenticated successfully. Your workspace is synchronized.
         </p>
-        <Button
+        <button
           onClick={() => setSignedIn(false)}
-          className="w-full bg-[#6366f1] hover:bg-[#4f46e5] text-white font-medium py-2.5 rounded-lg transition-all"
+          className="signin-submit-btn"
         >
           Manage Workspace
-        </Button>
-      </Card>
+        </button>
+      </div>
     )
   }
 
   return (
-    <Card className="grid w-full gap-0 p-0 md:grid-cols-2 overflow-hidden border border-[rgba(255,255,255,0.08)] bg-[#131b2e] shadow-2xl rounded-2xl">
-      {/* Left Branding Hero with Website's Indigo Gradient Theme */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-[#4f46e5] via-[#4338ca] to-[#312e81] p-10 text-white md:flex">
-        {/* Ambient Glowing Orbs */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-indigo-300/10 blur-2xl" />
+    <div className="signin-container">
+      <div className="signin-card">
+        {/* Left Branding Hero with Website's Indigo Theme */}
+        <div className="signin-hero">
+          {/* Ambient Glowing Orbs */}
+          <div className="signin-hero-glow-1" />
+          <div className="signin-hero-glow-2" />
 
-        {/* Brand Header */}
-        <div className="relative flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur-md ring-1 ring-white/25 shadow-sm">
-            <Sparkles className="w-5 h-5 text-white" />
+          {/* Brand Header */}
+          <div className="signin-brand-header">
+            <div className="signin-brand-icon">
+              <Sparkles style={{ width: 20, height: 20, color: '#ffffff' }} />
+            </div>
+            <span className="signin-brand-name">{companyName}</span>
+            <span className="signin-brand-tag">AI Triage</span>
           </div>
-          <span className="text-base font-bold tracking-tight">{companyName}</span>
-          <span className="text-[10px] font-semibold bg-white/20 text-indigo-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
-            AI Triage
-          </span>
+
+          {/* Headline Quote */}
+          <div className="signin-hero-body">
+            <h2 className="signin-hero-title">
+              Where customer support teams triage, draft, and resolve together.
+            </h2>
+            <p className="signin-hero-desc">
+              Automate first drafts with policy awareness while keeping human review at the center.
+            </p>
+          </div>
+
+          {/* Social Proof */}
+          <div className="signin-hero-proof">
+            <div className="signin-avatar-group">
+              {proof.map((p) => (
+                <div key={p.initials} className="signin-avatar-item" title={p.initials}>
+                  <img
+                    src={p.src}
+                    alt={p.initials}
+                    style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      // Fallback if image blocked
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                  <span className="signin-avatar-fallback" style={{ display: 'none' }}>
+                    {p.initials}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <span className="signin-proof-text">
+              Used by 40,000+ support specialists
+            </span>
+          </div>
         </div>
 
-        {/* Headline Quote */}
-        <div className="relative my-auto py-10">
-          <h2 className="text-[28px] font-bold leading-[1.2] tracking-tight text-balance text-white">
-            Where customer support teams triage, draft, and resolve together.
-          </h2>
-          <p className="mt-3 text-sm text-indigo-100/80 leading-relaxed max-w-[34ch]">
-            Automate first drafts with policy awareness while keeping human review at the center.
+        {/* Right Login Form matching website dark theme */}
+        <div className="signin-form-pane">
+          <div className="signin-header-box">
+            <h1 className="signin-title">Welcome back</h1>
+            <p className="signin-subtitle">
+              Sign in to your {companyName} agent workspace.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setEmail('google.agent@supportdesk.ai')
+              handleSubmit({ preventDefault: () => {} } as React.FormEvent)
+            }}
+            className="signin-google-btn"
+          >
+            <GoogleIcon />
+            <span>Continue with Google</span>
+          </button>
+
+          <div className="signin-divider">
+            <div className="signin-divider-line" />
+            <span className="signin-divider-text">or email</span>
+            <div className="signin-divider-line" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="signin-form">
+            <div className="signin-field">
+              <label htmlFor="ss-email" className="signin-label">
+                Work Email
+              </label>
+              <div className="signin-input-wrapper">
+                <input
+                  id="ss-email"
+                  type="email"
+                  placeholder="you@company.com"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="signin-input"
+                />
+              </div>
+            </div>
+
+            <div className="signin-field">
+              <div className="signin-label-row">
+                <label htmlFor="ss-password" className="signin-label">
+                  Password
+                </label>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    alert('Password reset link sent to your registered work email.')
+                  }}
+                  className="signin-forgot-link"
+                >
+                  Forgot?
+                </a>
+              </div>
+              <div className="signin-input-wrapper">
+                <input
+                  id="ss-password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="signin-input"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="signin-submit-btn"
+            >
+              {loading ? (
+                <span>Authenticating…</span>
+              ) : (
+                <>
+                  <span>Sign in to Workspace</span>
+                  <ArrowRight style={{ width: 16, height: 16, flexShrink: 0 }} />
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="signin-footer-text">
+            No account yet?{' '}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                alert('Free pilot activated for this workspace session!')
+              }}
+              className="signin-footer-link"
+            >
+              Start free pilot
+            </a>
           </p>
         </div>
-
-        {/* Social Proof */}
-        <div className="relative flex items-center gap-3 pt-6 border-t border-white/15">
-          <div className="flex -space-x-2.5">
-            {proof.map((p) => (
-              <Avatar
-                key={p.initials}
-                className="h-8 w-8 ring-2 ring-indigo-300/40 rounded-full overflow-hidden"
-              >
-                <AvatarImage src={p.src} alt="" className="object-cover h-full w-full" />
-                <AvatarFallback className="bg-indigo-950 text-indigo-200 text-[10px] font-bold">
-                  {p.initials}
-                </AvatarFallback>
-              </Avatar>
-            ))}
-          </div>
-          <span className="text-xs text-indigo-100/90 font-medium">
-            Used by 40,000+ support specialists
-          </span>
-        </div>
       </div>
-
-      {/* Right Login Form matching website dark theme */}
-      <div className="flex flex-col justify-center gap-5 p-8 md:p-10 bg-[#0e1424] text-[#f8fafc]">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-2xl font-bold tracking-tight font-display text-white">Welcome back</span>
-          <span className="text-xs text-[#94a3b8]">
-            Sign in to your {companyName} agent workspace.
-          </span>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            setEmail('google.user@example.com')
-            handleSubmit({ preventDefault: () => {} } as React.FormEvent)
-          }}
-          className="w-full justify-center gap-2.5 bg-[#131b2e] hover:bg-[#1a243d] border-[rgba(255,255,255,0.12)] text-[#f8fafc] font-medium py-2.5 rounded-lg transition-all"
-        >
-          <GoogleIcon />
-          <span>Continue with Google</span>
-        </Button>
-
-        <div className="flex items-center gap-3 my-1">
-          <span className="bg-[rgba(255,255,255,0.08)] h-px flex-1" />
-          <span className="text-[#64748b] text-[11px] font-semibold uppercase tracking-wider">
-            or email
-          </span>
-          <span className="bg-[rgba(255,255,255,0.08)] h-px flex-1" />
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ss-email" className="text-xs font-semibold text-[#cbd5e1]">
-              Work Email
-            </Label>
-            <Input
-              id="ss-email"
-              type="email"
-              placeholder="you@company.com"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-[#0b1120] border-[rgba(255,255,255,0.12)] text-white placeholder:text-[#64748b] focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] rounded-lg h-10 px-3.5"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="ss-password" className="text-xs font-semibold text-[#cbd5e1]">
-                Password
-              </Label>
-              <a
-                href="#"
-                onClick={(e) => { e.preventDefault(); alert('Password reset link sent to your registered email.') }}
-                className="text-xs text-[#818cf8] hover:text-[#a5b4fc] transition-colors"
-              >
-                Forgot?
-              </a>
-            </div>
-            <Input
-              id="ss-password"
-              type="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-[#0b1120] border-[rgba(255,255,255,0.12)] text-white placeholder:text-[#64748b] focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] rounded-lg h-10 px-3.5"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] hover:from-[#4f46e5] hover:to-[#4338ca] text-white font-semibold py-2.5 rounded-lg shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <span>Authenticating…</span>
-            ) : (
-              <>
-                <span>Sign in to Workspace</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </Button>
-        </form>
-
-        <p className="text-[#94a3b8] text-center text-xs mt-1">
-          No account yet?{' '}
-          <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); alert('Free trial activated for this workspace.') }}
-            className="text-[#818cf8] font-semibold hover:underline"
-          >
-            Start free pilot
-          </a>
-        </p>
-      </div>
-    </Card>
+    </div>
   )
 }
 
-export default SignIn6;
+export default SignIn6
