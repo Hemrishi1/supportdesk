@@ -107,17 +107,23 @@ export default function App() {
 
   const handleLoginSuccess = (email) => {
     const userEmail = email || 'agent@supportdesk.ai';
+    const isGoogle = userEmail.includes('@gmail.com') || userEmail.toLowerCase().includes('google');
     const namePart = userEmail.split('@')[0].replace(/[._-]/g, ' ');
     const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
     const userData = {
       email: userEmail,
       name: formattedName,
+      provider: isGoogle ? 'google' : 'email',
       signedInAt: new Date().toISOString()
     };
     setUser(userData);
     localStorage.setItem('supportdesk_user', JSON.stringify(userData));
     setActiveTab('inbox');
-    addToast(`Welcome back, ${formattedName}! Redirecting to dashboard...`, 'success');
+    if (isGoogle) {
+      addToast(`Signed in with Google as ${userEmail}!`, 'success');
+    } else {
+      addToast(`Welcome back, ${formattedName}! Redirecting to dashboard...`, 'success');
+    }
   };
 
   const handleLogout = () => {

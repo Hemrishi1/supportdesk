@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { Sparkles, ArrowRight, ShieldCheck } from 'lucide-react'
+import { Sparkles, ArrowRight, X, RefreshCw, Plus, User } from 'lucide-react'
 
-function GoogleIcon() {
+function GoogleIcon({ size = 18 }: { size?: number }) {
   return (
     <svg
-      width="18"
-      height="18"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
-      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, flexShrink: 0 }}
+      style={{ width: size, height: size, minWidth: size, minHeight: size, flexShrink: 0 }}
       aria-hidden="true"
     >
       <path
@@ -54,202 +54,331 @@ export function SignIn6({ onSuccess, companyName = 'SupportDesk' }: SignIn6Props
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [signedIn, setSignedIn] = useState(false)
+
+  // Google OAuth Modal state
+  const [showGoogleModal, setShowGoogleModal] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [showCustomGoogle, setShowCustomGoogle] = useState(false)
+  const [customGoogleEmail, setCustomGoogleEmail] = useState('')
+
+  const googleAccounts = [
+    {
+      name: 'Hemrishi',
+      email: 'hemrishi@gmail.com',
+      avatarColor: '#4285F4',
+      initial: 'H'
+    },
+    {
+      name: 'Hemrishi Support Admin',
+      email: 'hemrishi.support@supportdesk.ai',
+      avatarColor: '#34A853',
+      initial: 'S'
+    }
+  ]
+
+  const handleSelectGoogleAccount = (selectedEmail: string) => {
+    setGoogleLoading(true)
+    setTimeout(() => {
+      setGoogleLoading(false)
+      setShowGoogleModal(false)
+      if (onSuccess) {
+        onSuccess(selectedEmail)
+      }
+    }, 450)
+  }
+
+  const handleCustomGoogleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!customGoogleEmail.trim()) return
+    handleSelectGoogleAccount(customGoogleEmail.trim())
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
-      setSignedIn(true)
-      if (onSuccess) onSuccess(email || 'demo.agent@supportdesk.ai')
-    }, 600)
-  }
-
-  if (signedIn) {
-    return (
-      <div className="signin-success-card">
-        <div className="signin-success-icon">
-          <ShieldCheck style={{ width: 30, height: 30 }} />
-        </div>
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>
-          Welcome to {companyName}
-        </h3>
-        <p style={{ fontSize: '0.88rem', color: '#94a3b8', marginBottom: '24px', lineHeight: 1.5 }}>
-          Authenticated successfully. Your workspace is synchronized.
-        </p>
-        <button
-          onClick={() => setSignedIn(false)}
-          className="signin-submit-btn"
-        >
-          Manage Workspace
-        </button>
-      </div>
-    )
+      if (onSuccess) {
+        onSuccess(email.trim() || 'demo.agent@supportdesk.ai')
+      }
+    }, 400)
   }
 
   return (
-    <div className="signin-container">
-      <div className="signin-card">
-        {/* Left Branding Hero with Website's Indigo Theme */}
-        <div className="signin-hero">
-          {/* Ambient Glowing Orbs */}
-          <div className="signin-hero-glow-1" />
-          <div className="signin-hero-glow-2" />
+    <>
+      <div className="signin-container">
+        <div className="signin-card">
+          {/* Left Branding Hero with Website's Indigo Theme */}
+          <div className="signin-hero">
+            {/* Ambient Glowing Orbs */}
+            <div className="signin-hero-glow-1" />
+            <div className="signin-hero-glow-2" />
 
-          {/* Brand Header */}
-          <div className="signin-brand-header">
-            <div className="signin-brand-icon">
-              <Sparkles style={{ width: 20, height: 20, color: '#ffffff' }} />
-            </div>
-            <span className="signin-brand-name">{companyName}</span>
-            <span className="signin-brand-tag">AI Triage</span>
-          </div>
-
-          {/* Headline Quote */}
-          <div className="signin-hero-body">
-            <h2 className="signin-hero-title">
-              Where customer support teams triage, draft, and resolve together.
-            </h2>
-            <p className="signin-hero-desc">
-              Automate first drafts with policy awareness while keeping human review at the center.
-            </p>
-          </div>
-
-          {/* Social Proof */}
-          <div className="signin-hero-proof">
-            <div className="signin-avatar-group">
-              {proof.map((p) => (
-                <div key={p.initials} className="signin-avatar-item" title={p.initials}>
-                  <img
-                    src={p.src}
-                    alt={p.initials}
-                    style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
-                    onError={(e) => {
-                      // Fallback if image blocked
-                      e.currentTarget.style.display = 'none'
-                    }}
-                  />
-                  <span className="signin-avatar-fallback" style={{ display: 'none' }}>
-                    {p.initials}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <span className="signin-proof-text">
-              Used by 40,000+ support specialists
-            </span>
-          </div>
-        </div>
-
-        {/* Right Login Form matching website dark theme */}
-        <div className="signin-form-pane">
-          <div className="signin-header-box">
-            <h1 className="signin-title">Welcome back</h1>
-            <p className="signin-subtitle">
-              Sign in to your {companyName} agent workspace.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              setEmail('google.agent@supportdesk.ai')
-              handleSubmit({ preventDefault: () => {} } as React.FormEvent)
-            }}
-            className="signin-google-btn"
-          >
-            <GoogleIcon />
-            <span>Continue with Google</span>
-          </button>
-
-          <div className="signin-divider">
-            <div className="signin-divider-line" />
-            <span className="signin-divider-text">or email</span>
-            <div className="signin-divider-line" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="signin-form">
-            <div className="signin-field">
-              <label htmlFor="ss-email" className="signin-label">
-                Work Email
-              </label>
-              <div className="signin-input-wrapper">
-                <input
-                  id="ss-email"
-                  type="email"
-                  placeholder="you@company.com"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="signin-input"
-                />
+            {/* Brand Header */}
+            <div className="signin-brand-header">
+              <div className="signin-brand-icon">
+                <Sparkles style={{ width: 20, height: 20, color: '#ffffff' }} />
               </div>
+              <span className="signin-brand-name">{companyName}</span>
+              <span className="signin-brand-tag">AI Triage</span>
             </div>
 
-            <div className="signin-field">
-              <div className="signin-label-row">
-                <label htmlFor="ss-password" className="signin-label">
-                  Password
-                </label>
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    alert('Password reset link sent to your registered work email.')
-                  }}
-                  className="signin-forgot-link"
-                >
-                  Forgot?
-                </a>
-              </div>
-              <div className="signin-input-wrapper">
-                <input
-                  id="ss-password"
-                  type="password"
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="signin-input"
-                />
-              </div>
+            {/* Headline Quote */}
+            <div className="signin-hero-body">
+              <h2 className="signin-hero-title">
+                Where customer support teams triage, draft, and resolve together.
+              </h2>
+              <p className="signin-hero-desc">
+                Automate first drafts with policy awareness while keeping human review at the center.
+              </p>
             </div>
 
+            {/* Social Proof */}
+            <div className="signin-hero-proof">
+              <div className="signin-avatar-group">
+                {proof.map((p) => (
+                  <div key={p.initials} className="signin-avatar-item" title={p.initials}>
+                    <img
+                      src={p.src}
+                      alt={p.initials}
+                      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <span className="signin-proof-text">
+                Used by 40,000+ support specialists
+              </span>
+            </div>
+          </div>
+
+          {/* Right Login Form matching website dark theme */}
+          <div className="signin-form-pane">
+            <div className="signin-header-box">
+              <h1 className="signin-title">Welcome back</h1>
+              <p className="signin-subtitle">
+                Sign in to your {companyName} agent workspace.
+              </p>
+            </div>
+
+            {/* Google Sign-in Trigger Button */}
             <button
-              type="submit"
-              disabled={loading}
-              className="signin-submit-btn"
+              type="button"
+              id="google-signin-btn"
+              onClick={() => setShowGoogleModal(true)}
+              className="signin-google-btn"
             >
-              {loading ? (
-                <span>Authenticating…</span>
-              ) : (
-                <>
-                  <span>Sign in to Workspace</span>
-                  <ArrowRight style={{ width: 16, height: 16, flexShrink: 0 }} />
-                </>
-              )}
+              <GoogleIcon />
+              <span>Continue with Google</span>
             </button>
-          </form>
 
-          <p className="signin-footer-text">
-            No account yet?{' '}
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault()
-                alert('Free pilot activated for this workspace session!')
-              }}
-              className="signin-footer-link"
-            >
-              Start free pilot
-            </a>
-          </p>
+            <div className="signin-divider">
+              <div className="signin-divider-line" />
+              <span className="signin-divider-text">or email</span>
+              <div className="signin-divider-line" />
+            </div>
+
+            <form onSubmit={handleSubmit} className="signin-form">
+              <div className="signin-field">
+                <label htmlFor="ss-email" className="signin-label">
+                  Work Email
+                </label>
+                <div className="signin-input-wrapper">
+                  <input
+                    id="ss-email"
+                    type="email"
+                    placeholder="you@company.com"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="signin-input"
+                  />
+                </div>
+              </div>
+
+              <div className="signin-field">
+                <div className="signin-label-row">
+                  <label htmlFor="ss-password" className="signin-label">
+                    Password
+                  </label>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      alert('Password reset link sent to your registered work email.')
+                    }}
+                    className="signin-forgot-link"
+                  >
+                    Forgot?
+                  </a>
+                </div>
+                <div className="signin-input-wrapper">
+                  <input
+                    id="ss-password"
+                    type="password"
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="signin-input"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="signin-submit-btn"
+              >
+                {loading ? (
+                  <span>Authenticating…</span>
+                ) : (
+                  <>
+                    <span>Sign in to Workspace</span>
+                    <ArrowRight style={{ width: 16, height: 16, flexShrink: 0 }} />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <p className="signin-footer-text">
+              No account yet?{' '}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  alert('Free pilot activated for this workspace session!')
+                }}
+                className="signin-footer-link"
+              >
+                Start free pilot
+              </a>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Google OAuth Interactive Account Chooser Modal */}
+      {showGoogleModal && (
+        <div className="google-modal-overlay" onClick={() => !googleLoading && setShowGoogleModal(false)}>
+          <div className="google-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="google-modal-header">
+              <button
+                className="google-modal-close"
+                disabled={googleLoading}
+                onClick={() => setShowGoogleModal(false)}
+                title="Close"
+              >
+                <X size={18} />
+              </button>
+              <div className="google-modal-logo">
+                <GoogleIcon size={32} />
+              </div>
+              <h3 className="google-modal-title">Sign in with Google</h3>
+              <p className="google-modal-subtitle">
+                Choose an account to continue to <strong>{companyName}</strong>
+              </p>
+            </div>
+
+            {googleLoading ? (
+              <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+                <RefreshCw className="animate-spin" size={32} style={{ color: '#4285F4', margin: '0 auto 16px auto' }} />
+                <p style={{ fontSize: '0.94rem', color: '#f8fafc', fontWeight: 600 }}>Verifying with Google…</p>
+                <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Synchronizing your workspace permissions</p>
+              </div>
+            ) : (
+              <>
+                <div className="google-account-list">
+                  {googleAccounts.map((acc) => (
+                    <button
+                      key={acc.email}
+                      type="button"
+                      className="google-account-item"
+                      onClick={() => handleSelectGoogleAccount(acc.email)}
+                    >
+                      <div
+                        className="google-account-avatar"
+                        style={{ backgroundColor: acc.avatarColor }}
+                      >
+                        {acc.initial}
+                      </div>
+                      <div className="google-account-info">
+                        <span className="google-account-name">{acc.name}</span>
+                        <span className="google-account-email">{acc.email}</span>
+                      </div>
+                    </button>
+                  ))}
+
+                  {/* Use another account option */}
+                  {!showCustomGoogle && (
+                    <button
+                      type="button"
+                      className="google-account-item"
+                      onClick={() => setShowCustomGoogle(true)}
+                    >
+                      <div
+                        className="google-account-avatar"
+                        style={{ backgroundColor: '#1e293b', border: '1px dashed #64748b' }}
+                      >
+                        <User size={18} color="#cbd5e1" />
+                      </div>
+                      <div className="google-account-info">
+                        <span className="google-account-name">Use another Google account</span>
+                        <span className="google-account-email">Sign in with a different email address</span>
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                {/* Custom Google Email Input Form */}
+                {showCustomGoogle && (
+                  <form onSubmit={handleCustomGoogleSubmit} className="google-modal-custom-form">
+                    <label style={{ fontSize: '0.8rem', color: '#cbd5e1', fontWeight: 600 }}>
+                      Enter your Google email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="name@gmail.com or company Google Workspace"
+                      value={customGoogleEmail}
+                      onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                      required
+                      autoFocus
+                      className="signin-input"
+                    />
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        style={{ flex: 1 }}
+                        onClick={() => setShowCustomGoogle(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        style={{ flex: 1, background: '#4285F4', borderColor: '#4285F4' }}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="google-modal-footer">
+                  To continue, Google will share your name, email address, and profile picture with {companyName}. Before using this app, review their <a href="#" style={{ color: '#818cf8' }}>Privacy Policy</a> and <a href="#" style={{ color: '#818cf8' }}>Terms of Service</a>.
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
