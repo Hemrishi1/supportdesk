@@ -1,16 +1,31 @@
 # SupportDesk
 
-A working local pilot for a customer-support automation product. It classifies requests, assigns priority, drafts replies, and stores a human review history. Built with Python's standard library and a responsive browser interface; no package installation required.
+A modern full-stack customer-support triage and automation application powered by **React.js** on the frontend and Python's standard library on the backend. It classifies customer requests, assigns priority levels, drafts policy-aware replies, and provides human-in-the-loop review with persistent audit history.
 
 ## Start
 
+### Option 1: Run Full-Stack Production App (Single Command)
 From this project folder, run:
 
 ```powershell
 python server.py
 ```
 
-Open http://127.0.0.1:8765. Select **New request → Try a sample → Generate draft**. Edit the draft, then save, approve, or escalate it. Company knowledge sets the company name and policies. CSV export downloads the workspace's tickets and saved replies.
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765). The server automatically serves the compiled React.js production application with live AI triage, instant search, review modals, and analytics.
+
+### Option 2: Run React Frontend in Development Mode
+To work on the React app with hot module reloading (HMR):
+
+1. Start the backend:
+   ```powershell
+   python server.py
+   ```
+2. In a second terminal, start the Vite React dev server:
+   ```powershell
+   cd frontend
+   npm run dev
+   ```
+3. Open [http://localhost:5173](http://localhost:5173). API calls will automatically proxy to the Python backend on port 8765.
 
 ## Enable live AI
 

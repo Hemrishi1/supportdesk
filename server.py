@@ -282,7 +282,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(raw)))
         self.send_header('Cache-Control', 'no-store')
         self.send_header('X-Content-Type-Options', 'nosniff')
-        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+        self.send_header('Content-Security-Policy', "default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' http://localhost:* http://127.0.0.1:*; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
         self.end_headers()
         self.wfile.write(raw)
 
@@ -292,10 +292,6 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.valid_host():
             return self.respond(403, {'error': 'Invalid host.'})
-        if self.path in ['/', '/app.js', '/style.css']:
-            name = 'index.html' if self.path == '/' else self.path[1:]
-            mime = {'index.html': 'text/html; charset=utf-8', 'app.js': 'text/javascript; charset=utf-8', 'style.css': 'text/css; charset=utf-8'}[name]
-            return self.respond(200, (ROOT / 'static' / name).read_bytes(), mime)
         if self.path == '/api/state':
             provider, model, key = get_ai_config()
             with connect() as db:
@@ -308,13 +304,40 @@ class Handler(BaseHTTPRequestHandler):
                     tickets=[dict(r) for r in db.execute('SELECT * FROM tickets ORDER BY id DESC')],
                     events=[dict(r) for r in db.execute('SELECT * FROM events ORDER BY id DESC LIMIT 100')]
                 ))
+
+        # Check for compiled React production build
+        dist_dir = ROOT / 'frontend' / 'dist'
+        if dist_dir.is_dir():
+            clean_path = self.path.split('?')[0].lstrip('/')
+            target = dist_dir / clean_path if clean_path else dist_dir / 'index.html'
+            if target.is_file() and dist_dir in target.resolve().parents:
+                mime = 'text/html; charset=utf-8'
+                if target.suffix == '.js':
+                    mime = 'text/javascript; charset=utf-8'
+                elif target.suffix == '.css':
+                    mime = 'text/css; charset=utf-8'
+                elif target.suffix == '.svg':
+                    mime = 'image/svg+xml'
+                elif target.suffix == '.json':
+                    mime = 'application/json'
+                return self.respond(200, target.read_bytes(), mime)
+            elif not clean_path.startswith('api/'):
+                index = dist_dir / 'index.html'
+                if index.is_file():
+                    return self.respond(200, index.read_bytes(), 'text/html; charset=utf-8')
+
+        # Fallback to static pilot
+        if self.path in ['/', '/app.js', '/style.css']:
+            name = 'index.html' if self.path == '/' else self.path[1:]
+            mime = {'index.html': 'text/html; charset=utf-8', 'app.js': 'text/javascript; charset=utf-8', 'style.css': 'text/css; charset=utf-8'}[name]
+            return self.respond(200, (ROOT / 'static' / name).read_bytes(), mime)
         return self.respond(404, {'error': 'Not found.'})
 
     def do_POST(self):
         if not self.valid_host() or self.headers.get('X-App-Token') != TOKEN:
             return self.respond(403, {'error': 'Refresh the page and try again.'})
         origin = self.headers.get('Origin')
-        if origin and origin != 'http://' + self.headers.get('Host', ''):
+        if origin and origin not in {'http://' + self.headers.get('Host', ''), 'http://localhost:5173', 'http://127.0.0.1:5173'}:
             return self.respond(403, {'error': 'Invalid origin.'})
         try:
             size = int(self.headers.get('Content-Length', '0'))
