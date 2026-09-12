@@ -23,10 +23,12 @@ import {
   Layers,
   HelpCircle,
   Settings,
-  Building
+  Building,
+  LogIn
 } from 'lucide-react';
 
 import StackSpreadDemo from "@/components/ui/demo";
+import SignIn6 from "@/components/ui/sign-in-6";
 
 export default function App() {
   const [state, setState] = useState(null);
@@ -336,6 +338,14 @@ export default function App() {
           >
             <Layers size={18} />
             <span>Experience Showcase</span>
+          </button>
+
+          <button
+            className={`nav-item-btn ${activeTab === 'signin' ? 'active' : ''}`}
+            onClick={() => setActiveTab('signin')}
+          >
+            <LogIn size={18} />
+            <span>Agent Sign In</span>
           </button>
         </nav>
 
@@ -838,6 +848,21 @@ export default function App() {
         {activeTab === 'showcase' && (
           <div style={{ width: '100%', minHeight: '100vh', background: '#ececeb' }}>
             <StackSpreadDemo />
+          </div>
+        )}
+
+        {/* Sign In View */}
+        {activeTab === 'signin' && (
+          <div className="view-container" style={{ minHeight: 'calc(100vh - 120px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ maxWidth: '840px', width: '100%' }}>
+              <SignIn6
+                companyName={companyName}
+                onSuccess={(userEmail) => {
+                  addToast(`Signed in successfully as ${userEmail}`, 'success');
+                  setActiveTab('inbox');
+                }}
+              />
+            </div>
           </div>
         )}
       </main>
