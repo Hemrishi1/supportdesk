@@ -26,6 +26,8 @@ import {
   Building
 } from 'lucide-react';
 
+import StackSpreadDemo from "@/components/ui/demo";
+
 export default function App() {
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -326,6 +328,14 @@ export default function App() {
             <Clock size={18} />
             <span>Activity History</span>
             <span className="nav-count">{events.length}</span>
+          </button>
+
+          <button
+            className={`nav-item-btn ${activeTab === 'showcase' ? 'active' : ''}`}
+            onClick={() => setActiveTab('showcase')}
+          >
+            <Layers size={18} />
+            <span>Experience Showcase</span>
           </button>
         </nav>
 
@@ -821,6 +831,13 @@ export default function App() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Showcase View */}
+        {activeTab === 'showcase' && (
+          <div style={{ width: '100%', minHeight: '100vh', background: '#ececeb' }}>
+            <StackSpreadDemo />
           </div>
         )}
       </main>
