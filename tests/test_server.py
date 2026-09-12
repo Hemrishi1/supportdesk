@@ -74,7 +74,7 @@ class SupportTests(unittest.TestCase):
             def __enter__(self): return self
             def __exit__(self,*args): pass
             def read(self): return json.dumps({'status':'completed','output':[{'type':'message','content':[{'type':'output_text','text':json.dumps(result)}]}]}).encode()
-        with patch.dict(os.environ,{'OPENAI_API_KEY':'test','AI_PROVIDER':'openai'}), patch('server.urllib.request.urlopen', return_value=Response()) as call:
+        with patch.dict(os.environ,{'OPENAI_API_KEY':'test','OPENAI_MODEL':'gpt-5.2','AI_PROVIDER':'openai'}, clear=True), patch('server.urllib.request.urlopen', return_value=Response()) as call:
             self.assertEqual(server.analyze({'message':'refund'},{'company':'Acme','policy':''},'live'),result)
             body=json.loads(call.call_args.args[0].data)
             self.assertFalse(body['store'])
@@ -127,5 +127,45 @@ class SupportTests(unittest.TestCase):
             p, m, k = server.get_ai_config()
             self.assertEqual(p, 'openai')
             self.assertEqual(k, 'okey')
+        with patch.dict(os.environ, {'EXPLABS_API_KEY': 'ekey'}, clear=True):
+            p, m, k = server.get_ai_config()
+            self.assertEqual(p, 'experiential')
+            self.assertEqual(m, 'gpt-5.6-luna')
+            self.assertEqual(k, 'ekey')
+        with patch.dict(os.environ, {'OPENAI_MODEL': 'gpt-5.6-luna'}, clear=True):
+            p, m, k = server.get_ai_config()
+            self.assertEqual(p, 'experiential')
+            self.assertEqual(m, 'gpt-5.6-luna')
+
+    def test_experiential_key_missing(self):
+        with patch.dict(os.environ, {'OPENAI_MODEL': 'gpt-5.6-luna'}, clear=True):
+            with self.assertRaises(ValueError) as ctx:
+                server.analyze({'message':'test'}, {'company':'Acme','policy':''}, 'live')
+            self.assertIn('EXPLABS_API_KEY is not set. Please create one under Settings -> API Keys and export it.', str(ctx.exception))
+
+    def test_experiential_live_schema(self):
+        result={'category':'Account','priority':'Normal','summary':'Reset email','draft':'Here are the instructions.','reason':'Account assistance.'}
+        class ExpResponse:
+            def __enter__(self): return self
+            def __exit__(self,*args): pass
+            def read(self):
+                return json.dumps({
+                    'choices': [{
+                        'message': {
+                            'role': 'assistant',
+                            'content': json.dumps(result)
+                        },
+                        'finish_reason': 'stop'
+                    }],
+                    'usage': {'prompt_tokens': 15, 'completion_tokens': 25, 'total_tokens': 40}
+                }).encode('utf-8')
+
+        with patch.dict(os.environ, {'EXPLABS_API_KEY': 'test-exp-key', 'OPENAI_MODEL': 'gpt-5.6-luna'}, clear=True), patch('server.urllib.request.urlopen', return_value=ExpResponse()) as call:
+            self.assertEqual(server.analyze({'message':'help reset'}, {'company':'Acme','policy':''}, 'live'), result)
+            req = call.call_args.args[0]
+            self.assertEqual(req.full_url, 'https://api.experientiallabs.ai/v1/chat/completions')
+            self.assertEqual(req.headers['Authorization'], 'Bearer test-exp-key')
+            body = json.loads(req.data.decode('utf-8'))
+            self.assertEqual(body['model'], 'gpt-5.6-luna')
 
 if __name__ == '__main__': unittest.main()

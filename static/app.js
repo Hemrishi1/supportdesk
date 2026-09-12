@@ -9,11 +9,12 @@ async function api(path, data) {
 }
 async function refresh() {
   state=await api('/api/state');
-  const provName = state.provider === 'gemini' ? `Live AI (Gemini · ${state.model})` : state.provider === 'openai' ? `Live AI (OpenAI · ${state.model})` : 'Live AI available';
+  const provName = state.provider === 'experiential' ? `Live AI (Experiential · ${state.model})` : state.provider === 'gemini' ? `Live AI (Gemini · ${state.model})` : state.provider === 'openai' ? `Live AI (OpenAI · ${state.model})` : 'Live AI available';
   $('#connection').textContent=state.live_available?provName:'Demo mode · local workspace';
   $('#workspace-name').textContent=state.settings.company; $('#company').value=state.settings.company; $('#policy').value=state.settings.policy;
   $('#mode option[value="live"]').disabled=!state.live_available;
-  $('#setup-status').textContent=state.live_available?`Connected to ${state.provider==='gemini'?'Google Gemini':'OpenAI'} (${state.model}). Live AI is ready.`:'No API key configured. Set GEMINI_API_KEY in .env or your environment to enable Live AI.';
+  const provLabel = state.provider === 'experiential' ? 'Experiential gateway' : state.provider === 'gemini' ? 'Google Gemini' : 'OpenAI';
+  $('#setup-status').textContent=state.live_available?`Connected to ${provLabel} (${state.model}). Live AI is ready.`:'No API key configured. Set EXPLABS_API_KEY or GEMINI_API_KEY in .env to enable Live AI.';
   render();
 }
 function render() {
