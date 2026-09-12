@@ -24,15 +24,27 @@ import {
   HelpCircle,
   Settings,
   Building,
-  LogIn
+  LogIn,
+  LogOut,
+  ArrowLeft
 } from 'lucide-react';
 
 import StackSpreadDemo from "@/components/ui/demo";
 import SignIn6 from "@/components/ui/sign-in-6";
+import HomePage from "@/components/HomePage";
 
 export default function App() {
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('supportdesk_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [publicPage, setPublicPage] = useState('home'); // 'home' | 'signin'
   const [activeTab, setActiveTab] = useState('inbox');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -92,6 +104,28 @@ export default function App() {
   useEffect(() => {
     fetchState();
   }, []);
+
+  const handleLoginSuccess = (email) => {
+    const userEmail = email || 'agent@supportdesk.ai';
+    const namePart = userEmail.split('@')[0].replace(/[._-]/g, ' ');
+    const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    const userData = {
+      email: userEmail,
+      name: formattedName,
+      signedInAt: new Date().toISOString()
+    };
+    setUser(userData);
+    localStorage.setItem('supportdesk_user', JSON.stringify(userData));
+    setActiveTab('inbox');
+    addToast(`Welcome back, ${formattedName}! Redirecting to dashboard...`, 'success');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('supportdesk_user');
+    setPublicPage('home');
+    addToast('Signed out successfully.', 'info');
+  };
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
@@ -268,6 +302,109 @@ export default function App() {
       ? `OpenAI · ${state.model}`
       : 'Demo Mode';
 
+  // PUBLIC VIEW: Sign In or Landing Home Page
+  if (!user) {
+    if (publicPage === 'signin') {
+      return (
+        <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+          {/* Toast notifications */}
+          <div className="toast-container">
+            {toasts.map((t) => (
+              <div key={t.id} className="toast">
+                {t.type === 'success' ? (
+                  <CheckCircle size={18} color="#10b981" />
+                ) : t.type === 'error' ? (
+                  <AlertCircle size={18} color="#f43f5e" />
+                ) : (
+                  <Sparkles size={18} color="#6366f1" />
+                )}
+                <span>{t.message}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Top navigation */}
+          <header style={{
+            height: '72px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'rgba(9, 13, 22, 0.85)',
+            backdropFilter: 'blur(16px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 32px'
+          }}>
+            <button
+              onClick={() => setPublicPage('home')}
+              className="btn btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Home</span>
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '34px',
+                height: '34px',
+                background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+                borderRadius: '9px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 2px 10px rgba(99, 102, 241, 0.4)'
+              }}>
+                <Sparkles size={18} />
+              </div>
+              <span style={{ fontSize: '1.2rem', fontWeight: 700, fontFamily: 'var(--font-display, sans-serif)', letterSpacing: '-0.3px' }}>
+                SupportDesk
+              </span>
+            </div>
+
+            <div style={{ width: '120px' }}></div>
+          </header>
+
+          <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+            <div style={{ maxWidth: '840px', width: '100%' }}>
+              <SignIn6
+                companyName={companyName}
+                onSuccess={handleLoginSuccess}
+              />
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    // Default: Home Page with Sign In option
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc' }}>
+        {/* Toast notifications */}
+        <div className="toast-container">
+          {toasts.map((t) => (
+            <div key={t.id} className="toast">
+              {t.type === 'success' ? (
+                <CheckCircle size={18} color="#10b981" />
+              ) : t.type === 'error' ? (
+                <AlertCircle size={18} color="#f43f5e" />
+              ) : (
+                <Sparkles size={18} color="#6366f1" />
+              )}
+              <span>{t.message}</span>
+            </div>
+          ))}
+        </div>
+
+        <HomePage
+          onGoToSignIn={() => setPublicPage('signin')}
+          onQuickDemo={() => handleLoginSuccess('demo.agent@supportdesk.ai')}
+          activeModel={state?.model || 'gpt-5.6-luna'}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
       {/* Toast notifications */}
@@ -339,14 +476,6 @@ export default function App() {
             <Layers size={18} />
             <span>Experience Showcase</span>
           </button>
-
-          <button
-            className={`nav-item-btn ${activeTab === 'signin' ? 'active' : ''}`}
-            onClick={() => setActiveTab('signin')}
-          >
-            <LogIn size={18} />
-            <span>Agent Sign In</span>
-          </button>
         </nav>
 
         <div className="sidebar-footer">
@@ -363,14 +492,35 @@ export default function App() {
             </p>
           </div>
 
-          <div className="workspace-badge">
-            <div className="workspace-avatar">
-              {(companyName.charAt(0) || 'W').toUpperCase()}
+          <div className="workspace-badge" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+              <div className="workspace-avatar" style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: 'white', fontWeight: 700, flexShrink: 0 }}>
+                {(user?.name?.charAt(0) || user?.email?.charAt(0) || 'A').toUpperCase()}
+              </div>
+              <div className="workspace-info" style={{ minWidth: 0, overflow: 'hidden' }}>
+                <span className="workspace-name" style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{user?.name || user?.email}</span>
+                <span className="workspace-role" style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{companyName}</span>
+              </div>
             </div>
-            <div className="workspace-info">
-              <span className="workspace-name">{companyName}</span>
-              <span className="workspace-role">{providerLabel}</span>
-            </div>
+            <button
+              onClick={handleLogout}
+              style={{
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#f87171',
+                padding: '7px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                marginLeft: '6px'
+              }}
+              title="Sign Out"
+            >
+              <LogOut size={15} />
+            </button>
           </div>
         </div>
       </aside>
@@ -397,6 +547,18 @@ export default function App() {
             <div className={`status-pill ${state?.live_available ? 'live' : 'demo'}`}>
               <span className="pulse-dot"></span>
               <span>{state?.live_available ? `Live AI (${providerLabel})` : 'Demo Mode (Keyword Rules)'}</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: '9999px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
+              <span style={{ fontSize: '0.8rem', color: '#cbd5e1', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</span>
+              <button
+                onClick={handleLogout}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px', marginLeft: '4px' }}
+                title="Sign Out"
+              >
+                <LogOut size={14} />
+              </button>
             </div>
 
             <button className="btn btn-secondary" onClick={() => fetchState(false)} title="Refresh data">
@@ -848,21 +1010,6 @@ export default function App() {
         {activeTab === 'showcase' && (
           <div style={{ width: '100%', minHeight: '100vh', background: '#ececeb' }}>
             <StackSpreadDemo />
-          </div>
-        )}
-
-        {/* Sign In View */}
-        {activeTab === 'signin' && (
-          <div className="view-container" style={{ minHeight: 'calc(100vh - 120px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ maxWidth: '840px', width: '100%' }}>
-              <SignIn6
-                companyName={companyName}
-                onSuccess={(userEmail) => {
-                  addToast(`Signed in successfully as ${userEmail}`, 'success');
-                  setActiveTab('inbox');
-                }}
-              />
-            </div>
           </div>
         )}
       </main>
